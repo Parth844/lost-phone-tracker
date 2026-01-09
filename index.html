@@ -41,15 +41,16 @@ function getDistance(lat1, lon1, lat2, lon2) {
 
 // Send data to server
 function sendLocation(lat, lon) {
-    fetch("https://your-backend.onrender.com/location"), {
+    fetch("https://lost-phone-tracker.onrender.com/location", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      latitude: lat,
-      longitude: lon,
-      time: new Date().toISOString()
-    })
-  };
+    latitude: lat,
+    longitude: lon,
+    time: new Date().toISOString()
+  })
+});
+
 }
 
 // Start tracking
