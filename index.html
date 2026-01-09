@@ -41,7 +41,7 @@ function getDistance(lat1, lon1, lat2, lon2) {
 
 // Send data to server
 function sendLocation(lat, lon) {
-  fetch("http://YOUR_SERVER_IP:3000/location", {
+    fetch("https://your-backend.onrender.com/location"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
